@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <title>জানুয়ারি উপস্থিতি টেবিল</title>
+  <style>
+    body {
+      font-family: "Noto Sans Bengali", Arial, sans-serif;
+      padding: 20px;
+      background: #f5f7fa;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+      font-size: 14px;
+    }
+    th {
+      background: #007bff;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+    button.date-btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 5px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button.date-btn:hover {
+      background: #0056b3;
+    }
+    button.date-btn.active {
+      background: red !important;
+    }
+    input[type="time"] {
+      border: 1px solid #ccc;
+      padding: 3px;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 13px;
+    }
+    .hours {
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+
+<h2>জানুয়ারি মাসের উপস্থিতি তালিকা</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>তারিখ</th>
+      <th>প্রবেশ</th>
+      <th>বিরতি শুরু</th>
+      <th>বিরতি শেষ</th>
+      <th>বাহির</th>
+      <th>কাজের সময়</th>
+    </tr>
+  </thead>
+  <tbody id="attendance-body">
+    <!-- সারি এখানে জাভাস্ক্রিপ্ট দিয়ে তৈরি হবে -->
+  </tbody>
+</table>
+
+<script>
+  // মিনিট কনভার্টার
+  function timeToMinutes(t) {
+    if (!t) return null;
+    let [h, m] = t.split(":").map(Number);
+    return h * 60 + m;
+  }
+
+  // বাংলায় সময় ফরমেট
+  function formatToBanglaTime(minutes) {
+    if (minutes <= 0) return "-";
+    let hours = Math.floor(minutes / 60);
+    let mins = minutes % 60;
+    let text = "";
+    if (hours > 0) text += hours + " ঘন্টা ";
+    if (mins > 0) text += mins + " মিনিট";
+    return text.trim();
+  }
+
+  // কাজের সময় হিসাব
+  function calculateHours(row) {
+    let entry = timeToMinutes(row.querySelector(".entry").value);
+    let breakStart = timeToMinutes(row.querySelector(".break-start").value);
+    let breakEnd = timeToMinutes(row.querySelector(".break-end").value);
+    let exit = timeToMinutes(row.querySelector(".exit").value);
+
+    if (entry !== null && exit !== null) {
+      let total = exit - entry;
+      let breakTime = 0;
+      if (breakStart !== null && breakEnd !== null) {
+        breakTime = breakEnd - breakStart;
+      }
+      let workMinutes = total - breakTime;
+      row.querySelector(".hours").innerText = formatToBanglaTime(workMinutes);
+    } else {
+      row.querySelector(".hours").innerText = "-";
+    }
+  }
+
+  // জানুয়ারি মাসের ৩১ দিনের টেবিল তৈরি
+  const tbody = document.getElementById("attendance-body");
+  for (let d = 1; d <= 31; d++) {
+    let tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><button class="date-btn">${d}/১/২৬</button></td>
+      <td><input type="time" class="entry"></td>
+      <td><input type="time" class="break-start"></td>
+      <td><input type="time" class="break-end"></td>
+      <td><input type="time" class="exit"></td>
+      <td class="hours">-</td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  // ইভেন্ট লিসেনার সেট করা
+  document.querySelectorAll("tbody tr").forEach(row => {
+    row.querySelectorAll("input").forEach(input => {
+      input.addEventListener("change", () => calculateHours(row));
+    });
+
+    let btn = row.querySelector(".date-btn");
+    btn.addEventListener("click", () => {
+      btn.classList.toggle("active");
+    });
+  });
+</script>
+
+</body>
+</html>
